@@ -1,0 +1,6 @@
+@EtherCATTestApi_HostAddress = http://localhost:5032
+
+GET {{EtherCATTestApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
