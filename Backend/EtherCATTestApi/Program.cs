@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿﻿using Microsoft.EntityFrameworkCore;
 using EtherCATTestApi.DataAccess.DbContext;
 using EtherCATTestApi.EtherCATTestEngine;
 using EtherCATTestApi.EtherCATTestEngine.StateMachine;
@@ -6,6 +6,7 @@ using EtherCATTestApi.EtherCATTestEngine.Mailbox;
 using EtherCATTestApi.EtherCATTestEngine.DeviceIdentification;
 using EtherCATTestApi.EtherCATTestEngine.ESI;
 using EtherCATTestApi.EtherCATTestEngine.ObjectDictionary;
+using EtherCATTestApi.EtherCATTestEngine.DiffTool;
 using Serilog;
 
 // Configure Serilog
@@ -55,6 +56,7 @@ builder.Services.AddScoped<ProductCodeValidator>();
 builder.Services.AddScoped<ESIParser>();
 builder.Services.AddScoped<ESIValidator>();
 builder.Services.AddScoped<ObjectDictionaryValidator>();
+builder.Services.AddScoped<ConfigComparator>();
     
     // Add controllers
     builder.Services.AddControllers();

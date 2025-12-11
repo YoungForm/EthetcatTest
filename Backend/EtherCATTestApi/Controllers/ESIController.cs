@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿﻿using Microsoft.AspNetCore.Mvc;
 using EtherCATTestApi.EtherCATTestEngine.ESI;
 using System.IO;
 

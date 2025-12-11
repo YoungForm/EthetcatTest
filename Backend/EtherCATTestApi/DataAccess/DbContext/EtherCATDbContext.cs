@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿﻿using Microsoft.EntityFrameworkCore;
 using EtherCATTestApi.DataAccess.Models;
 
 namespace EtherCATTestApi.DataAccess.DbContext

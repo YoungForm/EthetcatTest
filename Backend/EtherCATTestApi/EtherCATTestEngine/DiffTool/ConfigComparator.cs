@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using EtherCATTestApi.EtherCATTestEngine.ESI;
@@ -40,6 +40,27 @@ namespace EtherCATTestApi.EtherCATTestEngine.DiffTool
                                   result.ObjectDictionaryDiff.HasDifferences ||
                                   result.SyncManagerDiff.HasDifferences ||
                                   result.PDOMappingDiff.HasDifferences;
+
+            if (!result.BasicInfoDiff.VendorIdMatch)
+            {
+                result.OverallDifferences.Add($"VendorId mismatch: expected 0x{result.BasicInfoDiff.VendorIdExpected:X4}, actual 0x{result.BasicInfoDiff.VendorIdActual:X4}");
+            }
+            if (!result.BasicInfoDiff.ProductCodeMatch)
+            {
+                result.OverallDifferences.Add($"ProductCode mismatch: expected 0x{result.BasicInfoDiff.ProductCodeExpected:X8}, actual 0x{result.BasicInfoDiff.ProductCodeActual:X8}");
+            }
+            foreach (var d in result.ObjectDictionaryDiff.Differences)
+            {
+                result.OverallDifferences.Add($"OD: {d}");
+            }
+            foreach (var d in result.SyncManagerDiff.Differences)
+            {
+                result.OverallDifferences.Add($"SM: {d}");
+            }
+            foreach (var d in result.PDOMappingDiff.Differences)
+            {
+                result.OverallDifferences.Add($"PDO: {d}");
+            }
 
             return result;
         }

@@ -1,15 +1,17 @@
 ﻿import { Layout, Menu, theme, Card, Statistic, Button, Progress } from 'antd';
 import React from 'react';
-import { Routes, Route, Link, useLocation } from 'react-router-dom';
+import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import './App.css';
 
 import ESIUploader from './components/ESIUploader';
+import ConfigComparison from './components/ConfigComparison';
 
 // Import page components
 const Dashboard = () => {
   // State for device connection status
   const [connectionStatus, setConnectionStatus] = React.useState(false);
   const [testProgress, setTestProgress] = React.useState(0);
+  const navigate = useNavigate();
   
   // Mock connection function
   const toggleConnection = () => {
@@ -76,7 +78,7 @@ const Dashboard = () => {
             <Button type="primary" size="large">
               一键测试
             </Button>
-            <Button size="large">
+            <Button size="large" onClick={() => navigate('/config')}>
               上传ESI文件
             </Button>
             <Button size="large">
@@ -99,6 +101,12 @@ const DeviceConfig = () => (
 
 const TestExecution = () => <div style={{ padding: '24px', background: '#fff', minHeight: '280px' }}><h2>测试执行</h2><p>运行EtherCAT测试</p></div>;
 const Results = () => <div style={{ padding: '24px', background: '#fff', minHeight: '280px' }}><h2>测试结果</h2><p>查看测试报告</p></div>;
+const ComparePage = () => (
+  <div style={{ padding: '24px', background: '#fff', minHeight: '280px' }}>
+    <h2>配置对比</h2>
+    <ConfigComparison />
+  </div>
+);
 
 const { Header, Content, Sider } = Layout;
 
@@ -141,6 +149,11 @@ function App() {
               label: <Link to="/config">设备配置</Link>,
             },
             {
+              key: 'compare',
+              icon: <span>🧩</span>,
+              label: <Link to="/compare">配置对比</Link>,
+            },
+            {
               key: 'test',
               icon: <span>🧪</span>,
               label: <Link to="/test">测试执行</Link>,
@@ -166,6 +179,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/config" element={<DeviceConfig />} />
+              <Route path="/compare" element={<ComparePage />} />
               <Route path="/test" element={<TestExecution />} />
               <Route path="/results" element={<Results />} />
             </Routes>

@@ -1,5 +1,5 @@
 ﻿import React, { useState } from 'react';
-import { Upload, Button, Card, Alert, Spin, Typography, Divider } from 'antd';
+import { Button, Card, Alert, Spin, Typography, Divider } from 'antd';
 import { UploadOutlined, FileTextOutlined, CheckCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import axios from 'axios';
 
@@ -31,12 +31,11 @@ const ESIUploader: React.FC = () => {
   const [parseResult, setParseResult] = useState<ESIParseResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const handleFileChange = (info: any) => {
-    if (info.file.status === 'done') {
-      setFile(info.file.originFileObj);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files && e.target.files[0];
+    if (f) {
+      setFile(f);
       setError(null);
-    } else if (info.file.status === 'error') {
-      setError('文件上传失败');
     }
   };
 
@@ -54,7 +53,7 @@ const ESIUploader: React.FC = () => {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await axios.post<ESIInfo>('http://localhost:5216/api/ESI/Parse', formData, {
+      const response = await axios.post<ESIInfo>('http://localhost:5271/api/ESI/Parse', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -82,7 +81,7 @@ const ESIUploader: React.FC = () => {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await axios.post<ESIParseResult>('http://localhost:5216/api/ESI/Validate', formData, {
+      const response = await axios.post<ESIParseResult>('http://localhost:5271/api/ESI/Validate', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -109,16 +108,10 @@ const ESIUploader: React.FC = () => {
       )}
 
       <div style={{ marginBottom: 16 }}>
-        <Upload
-          name="file"
-          accept=".xml"
-          beforeUpload={() => false} // 阻止自动上传
-          onChange={handleFileChange}
-          showUploadList={{ showRemoveIcon: true }}
-          maxCount={1}
-        >
+        <input type="file" accept=".xml" style={{ display: 'none' }} id="esi-file-input" onChange={handleInputChange} />
+        <label htmlFor="esi-file-input">
           <Button icon={<UploadOutlined />}>选择ESI文件</Button>
-        </Upload>
+        </label>
         <Text type="secondary" style={{ marginLeft: 16 }}>
           支持XML格式的ESI文件
         </Text>

@@ -1,4 +1,9 @@
-﻿using System;using Microsoft.AspNetCore.Mvc;using EtherCATTestApi.EtherCATTestEngine.DiffTool;using EtherCATTestApi.EtherCATTestEngine.ESI;using Serilog;
+﻿using Microsoft.AspNetCore.Mvc;
+using EtherCATTestApi.EtherCATTestEngine.DiffTool;
+using EtherCATTestApi.EtherCATTestEngine.ESI;
+using Serilog;
+using System.Threading.Tasks;
+using System.IO;
 
 namespace EtherCATTestApi.Controllers
 {
@@ -8,40 +13,58 @@ namespace EtherCATTestApi.Controllers
     {
         private readonly ConfigComparator _configComparator;
         private readonly ESIValidator _esiValidator;
+        private readonly ESIParser _esiParser;
 
         public ConfigComparisonController(
             ConfigComparator configComparator,
-            ESIValidator esiValidator)
+            ESIValidator esiValidator,
+            ESIParser esiParser)
         {
             _configComparator = configComparator;
             _esiValidator = esiValidator;
+            _esiParser = esiParser;
         }
 
-        /// <summary>
-        /// Compare ESI file configuration with actual device configuration
-        /// </summary>
-        /// <param name="request">Comparison request containing ESI file path, vendor ID, and product code</param>
-        /// <returns>Configuration comparison results</returns>
         [HttpPost("compare")]
-        public async Task<ActionResult<ConfigDiffResult>> CompareConfig([FromBody] ConfigComparisonRequest request)
+        public async Task<ActionResult<ConfigDiffResult>> Compare([FromForm] IFormFile file, [FromForm] ushort actualVendorId, [FromForm] uint actualProductCode)
         {
             try
             {
-                Log.Information("Starting configuration comparison");
-
-                // Validate ESI file first
-                var esiValidationResult = await _esiValidator.ValidateESIFileAsync(request.EsiFilePath);
-                if (!esiValidationResult.IsValid)
+                if (file == null || file.Length == 0)
                 {
-                    Log.Error("ESI validation failed: {Errors}", string.Join(", ", esiValidationResult.Errors));
-                    return BadRequest(new { Message = "Invalid ESI file", Errors = esiValidationResult.Errors });
+                    return BadRequest(new { Message = "No file uploaded" });
                 }
 
-                // Parse ESI file to get configuration info
-                var esiInfo = await _esiValidator.ParseESIFileAsync(request.EsiFilePath);
+                var tempPath = Path.GetTempFileName() + ".xml";
+                using (var fs = new FileStream(tempPath, FileMode.Create))
+                {
+                    await file.CopyToAsync(fs);
+                }
 
-                // Compare with actual device configuration
+                string validationErrors;
+                var isValid = _esiValidator.ValidateESIFile(tempPath, out validationErrors);
+                if (!isValid)
+                {
+                    System.IO.File.Delete(tempPath);
+                    return BadRequest(new { Message = "Invalid ESI file", Errors = validationErrors });
+                }
+
+                using var stream = new FileStream(tempPath, FileMode.Open, FileAccess.Read);
+                var esiInfo = _esiParser.ParseESIStream(stream);
+                System.IO.File.Delete(tempPath);
+
                 var comparisonResult = await _configComparator.CompareConfig(
                     esiInfo,
-                    request.ActualVendorId,
-                    request.Act
+                    actualVendorId,
+                    actualProductCode);
+
+                return Ok(comparisonResult);
+            }
+            catch (System.Exception ex)
+            {
+                Log.Error(ex, "Configuration comparison failed");
+                return BadRequest(new { Message = "Comparison failed", Error = ex.Message });
+            }
+        }
+    }
+}
